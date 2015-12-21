@@ -1,5 +1,66 @@
 package MooseX::Storage::Base::SerializedClass;
+our $AUTHORITY = 'cpan:YANICK';
 # ABSTRACT: Deserialize according to the serialized __CLASS__
+$MooseX::Storage::Base::SerializedClass::VERSION = '0.0.1';
+
+use parent 'Exporter';
+
+use Moose::Role;
+
+with 'MooseX::Storage::Basic';
+
+use Moose::Util qw/ with_traits /;
+use Class::Load 'load_class';
+
+our @EXPORT_OK = qw/ moosex_unpack /;
+
+use namespace::autoclean;
+
+around unpack => sub {
+    my( $orig, $class, $data, %args ) = @_;
+    $class = Class::Load::load_class( $data->{'__CLASS__'} );
+
+    if( my $roles = delete $data->{'__ROLES__'} ) {
+        $class = with_traits( $class, @$roles );
+        $data->{'__CLASS__'} = $class;
+    }
+
+    $orig->($class,$data,%args);
+};
+
+sub moosex_unpack {
+    MooseX::Storage::Base::SerializedClass::Dummy->unpack(shift);
+}
+
+
+{
+    package 
+        MooseX::Storage::Base::SerializedClass::Dummy;
+
+    use Moose;
+    use MooseX::Storage;
+
+    with Storage( base => 'SerializedClass', traits => [ 'WithRoles' ] );
+
+    __PACKAGE__->meta->make_immutable;
+
+}
+
+1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+MooseX::Storage::Base::SerializedClass - Deserialize according to the serialized __CLASS__
+
+=head1 VERSION
+
+version 0.0.1
 
 =head1 SYNOPSIS
 
@@ -47,53 +108,15 @@ a serialized object based on its C<__CLASS__> and C<__ROLES__> attributes.
 
     my $object = moosex_unpack( $struct );
 
+=head1 AUTHOR
+
+Yanick Champoux <yanick@babyl.dyndns.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2015 by Yanick Champoux.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
 =cut
-
-use parent 'Exporter';
-
-use Moose::Role;
-
-with 'MooseX::Storage::Basic';
-
-use Moose::Util qw/ with_traits /;
-use Class::Load 'load_class';
-
-our @EXPORT_OK = qw/ moosex_unpack /;
-
-use namespace::autoclean;
-
-around unpack => sub {
-    my( $orig, $class, $data, %args ) = @_;
-    $class = Class::Load::load_class( $data->{'__CLASS__'} );
-
-    if( my $roles = delete $data->{'__ROLES__'} ) {
-        $class = with_traits( $class, @$roles );
-        $data->{'__CLASS__'} = $class;
-    }
-
-    $orig->($class,$data,%args);
-};
-
-sub moosex_unpack {
-    MooseX::Storage::Base::SerializedClass::Dummy->unpack(shift);
-}
-
-
-{
-    package 
-        MooseX::Storage::Base::SerializedClass::Dummy;
-
-    use Moose;
-    use MooseX::Storage;
-
-    with Storage( base => 'SerializedClass', traits => [ 'WithRoles' ] );
-
-    __PACKAGE__->meta->make_immutable;
-
-}
-
-1;
-
-
-
-

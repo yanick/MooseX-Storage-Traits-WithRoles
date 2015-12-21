@@ -1,6 +1,7 @@
 package MooseX::Storage::Traits::WithRoles;
+our $AUTHORITY = 'cpan:YANICK';
 # ABSTRACT: A custom trait to include roles in serialization
-
+$MooseX::Storage::Traits::WithRoles::VERSION = '0.0.1';
 use Moose::Role;
 use namespace::autoclean;
 
@@ -26,6 +27,18 @@ no Moose::Role;
 1;
 
 __END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+MooseX::Storage::Traits::WithRoles - A custom trait to include roles in serialization
+
+=head1 VERSION
+
+version 0.0.1
 
 =head1 SYNOPSIS
 
@@ -68,5 +81,16 @@ When this trait is used, the serialized C<__CLASS__> value will be the base
 class, and C<__ROLES__> will contain the list of roles that it consumes. If used
 in conjecture with L<MooseX::Storage::Base::SerializedClass>, C<unpack()> will reinflate the data
 in the right class augmented by the given roles.
+
+=head1 AUTHOR
+
+Yanick Champoux <yanick@babyl.dyndns.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2015 by Yanick Champoux.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut

@@ -1,7 +1,0 @@
-^dist.ini
-^MANIFEST.SKIP
-MooseX-Storage-Traits-WithRoles.*
-^\.gitignore
-^\.git
-^\.build
-
