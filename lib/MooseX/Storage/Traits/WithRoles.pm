@@ -75,4 +75,7 @@ class, and C<__ROLES__> will contain the list of roles that it consumes. If used
 in conjecture with L<MooseX::Storage::Base::SerializedClass>, C<unpack()> will reinflate the data
 in the right class augmented by the given roles.
 
+Oh yeah, and the trait also works with L<MooseX::Role::Parameterized> roles. You're
+welcome, Sartak. ;-)
+
 =cut
