@@ -8,11 +8,17 @@ Revision history for MooseX-Storage-Traits-WithRoles
   [ DOCUMENTATION ]
 
   [ ENHANCEMENTS ]
-  - Now works with  MooseX::Role::Parameterized roles too! (GH#1)
 
   [ NEW FEATURES ]
 
   [ STATISTICS ]
+
+0.1.0 2015-12-23
+  [ ENHANCEMENTS ]
+    - Now works with  MooseX::Role::Parameterized roles too! (GH#1)
+
+  [ STATISTICS ]
+    - code churn: 6 files changed, 111 insertions(+), 37 deletions(-)
 
 0.0.1 2015-12-21
   - First version, unleashed on an unsuspecting world.
