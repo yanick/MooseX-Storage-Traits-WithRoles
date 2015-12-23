@@ -9,15 +9,21 @@ requires 'unpack';
 
 around 'pack' => sub {
     my ($orig, $self, %args) = @_;
+
     $args{engine_traits} ||= [];
-    push(@{$args{engine_traits}}, 'WithRoles');
+
+    push @{$args{engine_traits}}, 'WithRoles';
+
     $self->$orig(%args);
 };
 
 around 'unpack' => sub {
     my ($orig, $self, $data, %args) = @_;
+
     $args{engine_traits} ||= [];
-    push(@{$args{engine_traits}}, 'WithRoles');
+
+    push @{$args{engine_traits}}, 'WithRoles';
+
     $self->$orig($data, %args);
 };
 
@@ -68,5 +74,8 @@ When this trait is used, the serialized C<__CLASS__> value will be the base
 class, and C<__ROLES__> will contain the list of roles that it consumes. If used
 in conjecture with L<MooseX::Storage::Base::SerializedClass>, C<unpack()> will reinflate the data
 in the right class augmented by the given roles.
+
+Oh yeah, and the trait also works with L<MooseX::Role::Parameterized> roles. You're
+welcome, Sartak. ;-)
 
 =cut

@@ -57,6 +57,7 @@ with 'MooseX::Storage::Basic';
 
 use Moose::Util qw/ with_traits /;
 use Class::Load 'load_class';
+use List::MoreUtils qw/ apply /;
 
 our @EXPORT_OK = qw/ moosex_unpack /;
 
@@ -64,36 +65,33 @@ use namespace::autoclean;
 
 around unpack => sub {
     my( $orig, $class, $data, %args ) = @_;
-    $class = Class::Load::load_class( $data->{'__CLASS__'} );
 
-    if( my $roles = delete $data->{'__ROLES__'} ) {
-        $class = with_traits( $class, @$roles );
-        $data->{'__CLASS__'} = $class;
-    }
+    $class = _unpack_class( $data );
 
     $orig->($class,$data,%args);
 };
 
-sub moosex_unpack {
-    MooseX::Storage::Base::SerializedClass::Dummy->unpack(shift);
+sub _unpack_class {
+    my $data = shift;
+
+    my $class = Class::Load::load_class( $data->{'__CLASS__'} );
+
+    if( my $roles = delete $data->{'__ROLES__'} ) {
+        my @roles = apply { 
+            if( my( $c, $params ) = eval { %$_} ) {
+                $_ = $c->meta->generate_role( parameters => $params );
+            }
+        } @$roles;
+
+        $class = with_traits( $class, @roles );
+    }
+
+    return $data->{'__CLASS__'} = $class;
 }
 
-
-{
-    package 
-        MooseX::Storage::Base::SerializedClass::Dummy;
-
-    use Moose;
-    use MooseX::Storage;
-
-    with Storage( base => 'SerializedClass', traits => [ 'WithRoles' ] );
-
-    __PACKAGE__->meta->make_immutable;
-
+sub moosex_unpack {
+    my $data = shift;
+    _unpack_class($data)->unpack($data);
 }
 
 1;
-
-
-
-
