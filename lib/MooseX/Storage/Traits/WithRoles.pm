@@ -9,15 +9,21 @@ requires 'unpack';
 
 around 'pack' => sub {
     my ($orig, $self, %args) = @_;
+
     $args{engine_traits} ||= [];
-    push(@{$args{engine_traits}}, 'WithRoles');
+
+    push @{$args{engine_traits}}, 'WithRoles';
+
     $self->$orig(%args);
 };
 
 around 'unpack' => sub {
     my ($orig, $self, $data, %args) = @_;
+
     $args{engine_traits} ||= [];
-    push(@{$args{engine_traits}}, 'WithRoles');
+
+    push @{$args{engine_traits}}, 'WithRoles';
+
     $self->$orig($data, %args);
 };
 

@@ -64,45 +64,34 @@ use namespace::autoclean;
 
 around unpack => sub {
     my( $orig, $class, $data, %args ) = @_;
-    $class = Class::Load::load_class( $data->{'__CLASS__'} );
 
-    if( my $roles = delete $data->{'__ROLES__'} ) {
-        for my $role( @$roles ) {
-            if ( ref $role ) {
-                my( $c, $params ) = %$role;
-                $class = with_traits( $class, $c->meta->generate_role( parameters => $params ) );
-            }
-            else {
-                $class = with_traits( $class, $role,);
-            }
-        }
-    }
-
-    $data->{'__CLASS__'} = $class;
+    $class = _unpack_class( $data );
 
     $orig->($class,$data,%args);
 };
 
-sub moosex_unpack {
-    MooseX::Storage::Base::SerializedClass::Dummy->unpack(shift);
+sub _unpack_class {
+    my $data = shift;
+
+    my $class = Class::Load::load_class( $data->{'__CLASS__'} );
+
+    if( my $roles = delete $data->{'__ROLES__'} ) {
+        my @roles = map { 
+            !ref $_ ? $_ : do {
+                my( $c, $params ) = %$_;
+                $c->meta->generate_role( parameters => $params );
+            }
+        } @$roles;
+
+        $class = with_traits( $class, @roles );
+    }
+
+    return $data->{'__CLASS__'} = $class;
 }
 
-
-{
-    package 
-        MooseX::Storage::Base::SerializedClass::Dummy;
-
-    use Moose;
-    use MooseX::Storage;
-
-    with Storage( base => 'SerializedClass', traits => [ 'WithRoles' ] );
-
-    __PACKAGE__->meta->make_immutable;
-
+sub moosex_unpack {
+    my $data = shift;
+    _unpack_class($data)->unpack($data);
 }
 
 1;
-
-
-
-
