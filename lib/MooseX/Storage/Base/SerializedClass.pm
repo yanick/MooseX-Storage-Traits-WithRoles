@@ -67,9 +67,18 @@ around unpack => sub {
     $class = Class::Load::load_class( $data->{'__CLASS__'} );
 
     if( my $roles = delete $data->{'__ROLES__'} ) {
-        $class = with_traits( $class, @$roles );
-        $data->{'__CLASS__'} = $class;
+        for my $role( @$roles ) {
+            if ( ref $role ) {
+                my( $c, $params ) = %$role;
+                $class = with_traits( $class, $c->meta->generate_role( parameters => $params ) );
+            }
+            else {
+                $class = with_traits( $class, $role,);
+            }
+        }
     }
+
+    $data->{'__CLASS__'} = $class;
 
     $orig->($class,$data,%args);
 };
