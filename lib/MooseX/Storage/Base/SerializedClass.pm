@@ -57,6 +57,7 @@ with 'MooseX::Storage::Basic';
 
 use Moose::Util qw/ with_traits /;
 use Class::Load 'load_class';
+use List::MoreUtils qw/ apply /;
 
 our @EXPORT_OK = qw/ moosex_unpack /;
 
@@ -76,10 +77,9 @@ sub _unpack_class {
     my $class = Class::Load::load_class( $data->{'__CLASS__'} );
 
     if( my $roles = delete $data->{'__ROLES__'} ) {
-        my @roles = map { 
-            !ref $_ ? $_ : do {
-                my( $c, $params ) = %$_;
-                $c->meta->generate_role( parameters => $params );
+        my @roles = apply { 
+            if( my( $c, $params ) = eval { %$_} ) {
+                $_ = $c->meta->generate_role( parameters => $params );
             }
         } @$roles;
 

@@ -7,6 +7,7 @@ use List::Util qw/ pairgrep /;
 
 use Moose::Role;
 use MooseX::Storage::Base::SerializedClass;
+use List::MoreUtils qw/ apply /;
 
 use namespace::autoclean;
 
@@ -17,12 +18,10 @@ around collapse_object => sub {
 
     if( my @roles = map { $_->name } @{ $self->object->meta->roles } ) {
         $packed->{'__ROLES__'} = [
-            map { 
-                $_->meta->isa('MooseX::Role::Parameterized::Meta::Role::Parameterized') 
-                    ? { $_->meta->genitor->name => { pairgrep { $a ne '<<MOP>>' }  %{ $_->meta->parameters } } }
-                    : $_
-            }
-            @roles
+            apply { 
+                $_ = { $_->meta->genitor->name => { pairgrep { $a ne '<<MOP>>' }  %{ $_->meta->parameters } } }
+                    if $_->meta->isa('MooseX::Role::Parameterized::Meta::Role::Parameterized') 
+            } @roles
         ];
     }
 
