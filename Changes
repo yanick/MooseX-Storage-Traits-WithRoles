@@ -8,6 +8,7 @@ Revision history for MooseX-Storage-Traits-WithRoles
   [ DOCUMENTATION ]
 
   [ ENHANCEMENTS ]
+  - Deal with roles merged together via `with_roles( 'my_class', 'roleA', 'roleB' )`
 
   [ NEW FEATURES ]
 

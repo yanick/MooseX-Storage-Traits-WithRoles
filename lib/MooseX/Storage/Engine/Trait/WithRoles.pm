@@ -16,17 +16,20 @@ around collapse_object => sub {
 
     my $packed = $orig->( $self, @args );
 
-    if( my @roles = map { $_->name } @{ $self->object->meta->roles } ) {
-        $packed->{'__ROLES__'} = [
-            apply { 
-                $_ = { $_->meta->genitor->name => { pairgrep { $a ne '<<MOP>>' }  %{ $_->meta->parameters } } }
-                    if $_->meta->isa('MooseX::Role::Parameterized::Meta::Role::Parameterized') 
-            } @roles
-        ];
+    my @extra;
+    ( $packed->{'__CLASS__'}, @extra ) = split '\|', ($self->object->meta->superclasses)[0]
+        if $self->object->meta->is_anon_class or $self->object->meta->name =~ /__ANON__/ ;
+
+    my %in_superclass = map { $_ => 1 } map { split '\|', $_->name } @{ $packed->{'__CLASS__'}->meta->roles };
+
+    if( my @roles = grep { !$in_superclass{$_} } map { split '\|', } ( @extra, map { $_->name } @{ $self->object->meta->roles } ) ) {
+        @roles = apply { 
+            $_ = { $_->meta->genitor->name => { pairgrep { $a ne '<<MOP>>' }  %{ $_->meta->parameters } } }
+                if $_->meta->isa('MooseX::Role::Parameterized::Meta::Role::Parameterized') 
+        } @roles;
+        $packed->{'__ROLES__'} = \@roles;
     }
 
-    ( $packed->{'__CLASS__'} ) = $self->object->meta->superclasses
-        if $self->object->meta->is_anon_class;
 
     return $packed;
 };
